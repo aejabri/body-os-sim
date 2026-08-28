@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Body OS — محاكاة الجسم كمنظومة مفتوحة</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=IBM+Plex+Sans:wght@400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <div>
+      <strong>Body OS Sim</strong>
+      <span class="sub">منظومة مفتوحة: فم → سلاسل أعضاء ← غذاء ودواء</span>
+    </div>
+    <span class="badge">تعليمي — ليس جهازًا طبيًا</span>
+  </header>
+  <main>
+    <section class="col setup">
+      <h2>1. الحالة القاعدية</h2>
+      <div id="profiles" class="cards"></div>
+      <h2>2. قرار هذه الساعة</h2>
+      <div id="protocols" class="chips"></div>
+      <div class="meal-custom">
+        <label>كربوهيدرات غ <input id="mc" type="number" value="55" min="0" max="200" /></label>
+        <label>بروتين غ <input id="mp" type="number" value="22" min="0" max="120" /></label>
+        <label>دهون غ <input id="mf" type="number" value="18" min="0" max="120" /></label>
+        <label>ألياف غ <input id="mfi" type="number" value="8" min="0" max="40" /></label>
+        <label>مؤشر GI <input id="mgi" type="number" value="55" min="0" max="100" /></label>
+        <label>ماء مل <input id="mw" type="number" value="300" min="0" max="1500" /></label>
+      </div>
+      <div class="meds">
+        <label><input type="checkbox" id="med-ins" /> إنسولين خارجي</label>
+        <input id="med-ins-u" type="number" value="24" min="0" max="80" title="وحدات/يوم مختزلة" />
+        <label><input type="checkbox" id="med-met" /> متفورمين</label>
+        <label><input type="checkbox" id="med-ace" /> مثبط ACE</label>
+      </div>
+      <div class="actions">
+        <button id="btn-eat" class="pri">أدخل الوجبة الآن</button>
+        <button id="btn-1h">+1 ساعة</button>
+        <button id="btn-4h">+4 ساعات</button>
+        <button id="btn-24h">+24 ساعة</button>
+        <button id="btn-7d">+7 أيام (نفس النمط يوميًا)</button>
+        <button id="btn-reset">صفّر الحالة</button>
+      </div>
+    </section>
+    <section class="col vis">
+      <h2>الجسم الآن · ساعة <span id="clock">0</span></h2>
+      <svg id="body" viewBox="0 0 280 420" role="img" aria-label="body map"></svg>
+      <div id="vitals" class="vitals"></div>
+    </section>
+    <section class="col read">
+      <h2>ماذا يحدث في السلاسل</h2>
+      <div id="explain"></div>
+      <h2>سجل التفاعلات</h2>
+      <div id="log" class="log"></div>
+    </section>
+  </main>
+  <section class="know">
+    <h2>المعرفة المُثبَّتة التي بُني عليها النموذج (اتجاه لا جرعة فردية)</h2>
+    <ul>
+      <li>الإنسولين هرمون تخزين: يكبح الليباز الحساس للهرمون ويمنع الكيتوجينيز الكبدي. غيابه المطلق في النوع 1 يفتح حماضًا كيتونيًا.</li>
+      <li>الجلوكاجون والكورتيزول يرفعان إنتاج الكبد للجلوكوز. المتفورمين يخفض هذا الإنتاج.</li>
+      <li>عتبة كلوية تقريبية لإعادة امتصاص الجلوكوز ~180 مغ/دل؛ فوقها إدرار أسموزي وجفاف.</li>
+      <li>الإنسولين يدفع البوتاسيوم إلى الخلايا. الإيقاف المفاجئ قد يرفع K الظاهر؛ الجرعة بلا تعويض قد تخفّضه.</li>
+      <li>الألياف تبطئ الإفراغ المعدي وترفع إنكرتينات بشكل متواضع. المؤشر الجلايسيمي العالي يعجّل ظهور السكر في الدم.</li>
+      <li>المخ يستهلك جلوكوزًا باستمرار (~120 غ/يوم كمرجع شائع). هذا ليس مبررًا لسكر مضاف بلا حد في مريض سكري.</li>
+      <li>النموذج لا يحاكي السرطان أو «سمية» دواء الضغط كفئة، ولا يساوي بين الصيام العلاجي بإشراف وإيقاف الإنسولين.</li>
+    </ul>
+  </section>
+  <footer>محاكاة حجرات مبسّطة للتعليم. لا تشخّص ولا تُوقف دواءً بناءً عليها. راجع طبيبك.</footer>
+  <script src="js/profiles.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
