@@ -11,7 +11,7 @@
   <header>
     <div>
       <strong>Body OS Sim</strong>
-      <span class="sub">مخطط 2D + مقطع تشريحي واقعي 3D</span>
+      <span class="sub">مخطط 2D + مقطع + صورة مولّدة لكل محاكاة</span>
     </div>
     <span class="badge">تعليمي</span>
   </header>
@@ -77,8 +77,21 @@
       <div id="viewtabs">
         <button class="chip" data-v="2d">مخطط 2D</button>
         <button class="chip on" data-v="3d">مقطع واقعي</button>
+        <button class="chip" data-v="img">صورة الحالة</button>
       </div>
       <svg id="body" viewBox="0 0 280 420" style="display:none"></svg>
+      <div id="simimg-pane" style="display:none">
+        <div class="simimg-actions">
+          <button id="btn-gen-local" class="pri">ولّد / أعد الرسم</button>
+          <button id="btn-gen-ai">توليد شبكي جديد</button>
+          <button id="btn-gen-shot">التقط إطارًا</button>
+          <button id="btn-gen-dl">نزّل PNG</button>
+        </div>
+        <p id="simgen-cap" class="mute">الصورة تتحدث مع أرقام المحاكاة: الجنس، العمر، BMI، VAT، الكبد، الضغط، السكر.</p>
+        <canvas id="simcanvas" width="768" height="1024" hidden></canvas>
+        <img id="simgen" alt="صورة مولّدة من المحاكاة" />
+        <div id="sim-gallery" class="sim-gallery"></div>
+      </div>
       <div id="body3d" style="display:flex">
         <div id="realwrap">
           <img id="realbody" alt="مقطع تشريحي تعليمي" />
@@ -102,7 +115,7 @@
     <article class="cardc ok"><h3>2. DASH + صيام متقطع</h3><ul><li>ألياف أعلى → DNL يهدأ</li><li>انخفاض تدريجي</li><li>اختر DASH ثم شغّل 7 أيام</li></ul></article>
     <article class="cardc info"><h3>3. ادعاءات الطيبات ليست فسيولوجيا النموذج</h3><ul><li>النشا لا يلغي الإنسولين</li><li>الكوليسترول ليس بلا علاقة بالطعام</li><li>نقص البروتين لا يعالج VAT</li></ul></article>
   </section>
-  <footer>محاكاة اتجاهية للتعليم. الصورة مولَّدة وليست أشعة ولا تشخيصًا. لا توقف دواءً بناءً عليها.</footer>
+  <footer>محاكاة اتجاهية للتعليم. الصورة مولَّدة وليست أشعة ولا تشخيصًا. لا توقف دواءً بناءً عليها.</footer>
   <div class="dock">
     <button id="btn-run" class="pri">شغّل المدة</button>
     <button id="btn-eat" class="pri">أدخل الوجبة</button>
@@ -130,5 +143,6 @@
   <script src="js/life-ui.js"></script>
   <script src="js/real-img.js"></script>
   <script src="js/body-vis.js"></script>
+  <script src="js/sim-img.js"></script>
 </body>
 </html>
