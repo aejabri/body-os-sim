@@ -3,74 +3,113 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Body OS — محاكاة الجسم كمنظومة مفتوحة</title>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=IBM+Plex+Sans:wght@400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <title>Body OS Sim</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header>
     <div>
       <strong>Body OS Sim</strong>
-      <span class="sub">منظومة مفتوحة: فم → سلاسل أعضاء ← غذاء ودواء</span>
+      <span class="sub">اضبط البداية — ثم شغّل المدة أو تقدّم ساعة بساعة</span>
     </div>
-    <span class="badge">تعليمي — ليس جهازًا طبيًا</span>
+    <span class="badge">تعليمي</span>
   </header>
   <main>
     <section class="col setup">
-      <h2>1. الحالة القاعدية</h2>
+      <div id="preset">قبل التشغيل</div>
+      <h2>1. الشخص والحركة والماء والنوم والضغط</h2>
+      <div class="person">
+        <label>العمر <input id="age" type="number" value="40" min="12" max="90" /></label>
+        <label>الجنس <select id="sex"><option value="M">ذكر</option><option value="F">أنثى</option></select></label>
+        <label>الوزن كغ <input id="weight" type="number" value="78" min="35" max="180" /></label>
+        <label>أسلوب الحركة <select id="activity"></select></label>
+        <label>ماء لتر/يوم <input id="waterL" type="number" step="0.1" value="2.2" min="0.5" max="6" /></label>
+        <label>نوم ساعات/يوم <input id="sleepH" type="number" step="0.5" value="7" min="3" max="12" /></label>
+        <label>ضغط انقباضي <input id="sbpNow" type="number" value="128" min="85" max="220" /></label>
+        <label>ضغط انبساطي <input id="dbpNow" type="number" value="82" min="50" max="130" /></label>
+        <label>مدة المحاكاة <select id="duration"><option value="4">4 ساعات</option><option value="24">24 ساعة</option><option value="72">3 أيام</option><option value="168" selected>7 أيام</option><option value="336">14 يومًا</option><option value="720">30 يومًا</option></select></label>
+        <label>وجبات/يوم <input id="mealsn" type="number" value="2" min="1" max="4" /></label>
+      </div>
+      <h2>2. الفئة الصحية</h2>
       <div id="profiles" class="cards"></div>
-      <h2>2. قرار هذه الساعة</h2>
+      <h2>3. الحمية</h2>
       <div id="protocols" class="chips"></div>
       <div class="meal-custom">
-        <label>كربوهيدرات غ <input id="mc" type="number" value="55" min="0" max="200" /></label>
-        <label>بروتين غ <input id="mp" type="number" value="22" min="0" max="120" /></label>
-        <label>دهون غ <input id="mf" type="number" value="18" min="0" max="120" /></label>
-        <label>ألياف غ <input id="mfi" type="number" value="8" min="0" max="40" /></label>
-        <label>مؤشر GI <input id="mgi" type="number" value="55" min="0" max="100" /></label>
-        <label>ماء مل <input id="mw" type="number" value="300" min="0" max="1500" /></label>
+        <label>كرب <input id="mc" type="number" value="55" /></label>
+        <label>بروتين <input id="mp" type="number" value="22" /></label>
+        <label>دهن <input id="mf" type="number" value="18" /></label>
+        <label>ألياف <input id="mfi" type="number" value="8" /></label>
+        <label>GI <input id="mgi" type="number" value="55" /></label>
+        <label>ماء مل/وجبة <input id="mw" type="number" value="300" /></label>
       </div>
       <div class="meds">
-        <label><input type="checkbox" id="med-ins" /> إنسولين خارجي</label>
-        <input id="med-ins-u" type="number" value="24" min="0" max="80" title="وحدات/يوم مختزلة" />
+        <label><input type="checkbox" id="med-ins" /> إنسولين</label>
+        <input id="med-ins-u" type="number" value="24" />
         <label><input type="checkbox" id="med-met" /> متفورمين</label>
-        <label><input type="checkbox" id="med-ace" /> مثبط ACE</label>
+        <label><input type="checkbox" id="med-ace" /> ACE</label>
       </div>
-      <div class="actions">
-        <button id="btn-eat" class="pri">أدخل الوجبة الآن</button>
-        <button id="btn-1h">+1 ساعة</button>
-        <button id="btn-4h">+4 ساعات</button>
-        <button id="btn-24h">+24 ساعة</button>
-        <button id="btn-7d">+7 أيام (نفس النمط يوميًا)</button>
-        <button id="btn-reset">صفّر الحالة</button>
+      <h2>4. عثور طعام</h2>
+      <div class="scan-row">
+        <input id="foodname" placeholder="تمر، كبسة، nutella" />
+        <button id="btn-name">ابحث الاسم</button>
       </div>
+      <div class="scan-row">
+        <input id="barcode" placeholder="EAN" />
+        <input id="grams" type="number" value="100" />
+        <button id="btn-lookup">باركود</button>
+        <button id="btn-cam">كاميرا</button>
+        <button id="btn-photo">صورة</button>
+        <input id="photo-file" type="file" accept="image/*" hidden />
+      </div>
+      <img id="photo-preview" alt="" style="display:none;max-width:100%;max-height:140px" />
+      <div id="hits"></div>
+      <div id="cam-wrap"><video id="cam" playsinline autoplay muted></video><button id="btn-cam-stop">إيقاف</button></div>
+      <p id="scan-status" class="mute">اسم / باركود / كاميرا / صورة</p>
+      <label class="mute">رش <select id="residue"><option value="none">لا</option><option value="washed">مغسول</option><option value="conventional">تقليدي</option><option value="op">فوسفور عضوي</option></select></label>
+      <div id="scan-card" class="scan-card"></div>
     </section>
     <section class="col vis">
-      <h2>الجسم الآن · ساعة <span id="clock">0</span></h2>
-      <svg id="body" viewBox="0 0 280 420" role="img" aria-label="body map"></svg>
+      <h2>الجسم · س<span id="clock">0</span></h2>
+      <svg id="body" viewBox="0 0 280 420"></svg>
+      <div id="path" class="path"></div>
       <div id="vitals" class="vitals"></div>
-    </section>
-    <section class="col read">
-      <h2>ماذا يحدث في السلاسل</h2>
+      <h2>السلاسل</h2>
       <div id="explain"></div>
-      <h2>سجل التفاعلات</h2>
+      <h2>السجل</h2>
       <div id="log" class="log"></div>
     </section>
   </main>
-  <section class="know">
-    <h2>المعرفة المُثبَّتة التي بُني عليها النموذج (اتجاه لا جرعة فردية)</h2>
-    <ul>
-      <li>الإنسولين هرمون تخزين: يكبح الليباز الحساس للهرمون ويمنع الكيتوجينيز الكبدي. غيابه المطلق في النوع 1 يفتح حماضًا كيتونيًا.</li>
-      <li>الجلوكاجون والكورتيزول يرفعان إنتاج الكبد للجلوكوز. المتفورمين يخفض هذا الإنتاج.</li>
-      <li>عتبة كلوية تقريبية لإعادة امتصاص الجلوكوز ~180 مغ/دل؛ فوقها إدرار أسموزي وجفاف.</li>
-      <li>الإنسولين يدفع البوتاسيوم إلى الخلايا. الإيقاف المفاجئ قد يرفع K الظاهر؛ الجرعة بلا تعويض قد تخفّضه.</li>
-      <li>الألياف تبطئ الإفراغ المعدي وترفع إنكرتينات بشكل متواضع. المؤشر الجلايسيمي العالي يعجّل ظهور السكر في الدم.</li>
-      <li>المخ يستهلك جلوكوزًا باستمرار (~120 غ/يوم كمرجع شائع). هذا ليس مبررًا لسكر مضاف بلا حد في مريض سكري.</li>
-      <li>النموذج لا يحاكي السرطان أو «سمية» دواء الضغط كفئة، ولا يساوي بين الصيام العلاجي بإشراف وإيقاف الإنسولين.</li>
-    </ul>
+  <section class="compare">
+    <article class="cardc red"><h3>1. قبل التغيير</h3><ul><li>دورة سكرية مختلة</li><li>LDL/TG مرتفعان</li><li>VAT نشط</li></ul></article>
+    <article class="cardc ok"><h3>2. DASH + صيام متقطع</h3><ul><li>ألياف أعلى → DNL يهدأ</li><li>انخفاض تدريجي</li><li>اختر DASH ثم شغّل 7 أيام</li></ul></article>
+    <article class="cardc info"><h3>3. ادعاءات الطيبات ليست فسيولوجيا النموذج</h3><ul><li>النشا لا يلغي الإنسولين</li><li>الكوليسترول ليس بلا علاقة بالطعام</li><li>نقص البروتين لا يعالج VAT</li></ul></article>
   </section>
-  <footer>محاكاة حجرات مبسّطة للتعليم. لا تشخّص ولا تُوقف دواءً بناءً عليها. راجع طبيبك.</footer>
+  <footer>محاكاة اتجاهية للتعليم. لا تشخّص ولا تُوقف دواءًا بناءً عليها.</footer>
+  <div class="dock">
+    <button id="btn-run" class="pri">شغّل المدة</button>
+    <button id="btn-eat" class="pri">أدخل الوجبة</button>
+    <button id="btn-1h">+1س</button>
+    <button id="btn-4h">+4س</button>
+    <button id="btn-24h">+24س</button>
+    <button id="btn-7d">+7ي</button>
+    <button id="btn-reset">صفّر / أعد البداية</button>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
   <script src="js/profiles.js"></script>
   <script src="js/engine.js"></script>
+  <script src="js/additives.js"></script>
+  <script src="js/lookup.js"></script>
+  <script src="js/staples.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/chains.js"></script>
+  <script src="js/vat.js"></script>
+  <script src="js/life.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/scan-ui.js"></script>
+  <script src="js/find-ui.js"></script>
+  <script src="js/vat-ui.js"></script>
+  <script src="js/life-ui.js"></script>
 </body>
 </html>
