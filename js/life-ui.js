@@ -1,6 +1,6 @@
 (function () {
   const $ = function (id) { return document.getElementById(id); };
-  if (!$("age")) return;
+  if (!$("age") || !window.ACTIVITY) return;
   const actBox = $("activity");
   if (actBox && !actBox.options.length) {
     actBox.innerHTML = Object.keys(window.ACTIVITY).map(function (k) {
@@ -16,22 +16,16 @@
   }
   function currentMeal() {
     if (window._scannedMeal) return Object.assign({}, window._scannedMeal, { water: +$("mw").value || 300 });
-    return {
-      c: +$("mc").value, p: +$("mp").value, f: +$("mf").value,
-      fiber: +$("mfi").value, gi: +$("mgi").value, water: +$("mw").value || 300, tags: ["custom"]
-    };
+    return { c: +$("mc").value, p: +$("mp").value, f: +$("mf").value, fiber: +$("mfi").value, gi: +$("mgi").value, water: +$("mw").value || 300, tags: ["custom"] };
   }
   function lifeFields() {
     return {
-      activity: $("activity") && $("activity").value,
-      age: +$("age").value,
-      sex: $("sex").value,
-      weight: +$("weight").value,
+      activity: $("activity").value, age: +$("age").value, sex: $("sex").value, weight: +$("weight").value,
       diet: window.__dietId || "balanced",
-      waterL: +(( $("waterL") && $("waterL").value) || 2.2),
-      sleepH: +(( $("sleepH") && $("sleepH").value) || 7),
-      sbpNow: +(( $("sbpNow") && $("sbpNow").value) || 120),
-      dbpNow: +(( $("dbpNow") && $("dbpNow").value) || 80)
+      waterL: +(($("waterL") && $("waterL").value) || 2.2),
+      sleepH: +(($("sleepH") && $("sleepH").value) || 7),
+      sbpNow: +(($("sbpNow") && $("sbpNow").value) || 120),
+      dbpNow: +(($("dbpNow") && $("dbpNow").value) || 80)
     };
   }
   function paintPreset() {
@@ -39,15 +33,10 @@
     if (!box) return;
     const pr = selectedProfile();
     const d = (window.PROTOCOLS || []).find(function (p) { return p.id === window.__dietId; });
-    const act = window.ACTIVITY[($("activity") && $("activity").value) || "walk"] || {};
+    const act = window.ACTIVITY[$("activity").value] || {};
     const hours = +$("duration").value;
     const L = lifeFields();
-    box.innerHTML = "<b>قبل التشغيل</b> — " + pr.ar +
-      " · " + L.age + " سنة · " + (L.sex === "F" ? "أنثى" : "ذكر") +
-      " · " + L.weight + " كغ · " + act.ar +
-      " · ماء " + L.waterL + " ل/يوم · نوم " + L.sleepH + " س · ضغط " + L.sbpNow + "/" + L.dbpNow +
-      " · حمية " + (d ? d.ar : "مخصصة") +
-      " · مدة " + (hours >= 24 ? (hours / 24) + " يوم" : hours + " ساعة");
+    box.innerHTML = "<b>قبل التشغيل</b> — " + pr.ar + " · " + L.age + " سنة · " + (L.sex === "F" ? "أنثى" : "ذكر") + " · " + L.weight + " كغ · " + act.ar + " · ماء " + L.waterL + " ل/يوم · نوم " + L.sleepH + " س · ضغط " + L.sbpNow + "/" + L.dbpNow + " · حمية " + (d ? d.ar : "مخصصة") + " · مدة " + (hours >= 24 ? (hours / 24) + " يوم" : hours + " ساعة");
   }
   window.rebaseBeforeSim = function () {
     const pr = selectedProfile();
@@ -72,16 +61,8 @@
     s.events.unshift({ t: s.t, lvl: "info", ar: "انتهت المدة المختارة." });
     if (window.__forceRender) window.__forceRender();
   };
-  ["age", "sex", "weight", "activity", "duration", "mealsn", "waterL", "sleepH", "sbpNow", "dbpNow"].forEach(function (id) {
+  ["age","sex","weight","activity","duration","mealsn","waterL","sleepH","sbpNow","dbpNow"].forEach(function (id) {
     if ($(id)) $(id).addEventListener("change", window.rebaseBeforeSim);
   });
-  const proto = $("protocols");
-  if (proto) proto.addEventListener("click", function (e) {
-    const btn = e.target.closest(".chip");
-    if (btn && btn.dataset.id) window.__dietId = btn.dataset.id;
-    setTimeout(window.rebaseBeforeSim, 0);
-  });
-  const profiles = $("profiles");
-  if (profiles) profiles.addEventListener("click", function () { setTimeout(window.rebaseBeforeSim, 0); });
-  setTimeout(window.rebaseBeforeSim, 250);
+  setTimeout(window.rebaseBeforeSim, 80);
 })();
