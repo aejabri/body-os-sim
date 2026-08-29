@@ -73,9 +73,19 @@
       "<span class='mute'>صورة مولّدة تعليميًا لهذه الحالة — ليست أشعة ولا تشخيصًا</span>";
     const img = box.querySelector("#realbody");
     if (img) {
-      img.style.filter = c.vatHot ? "saturate(1.15) contrast(1.05)" : "saturate(0.92)";
-      img.style.opacity = c.vatHot ? "1" : "0.92";
+      img.style.filter = c.vatHot ? "saturate(1.18) contrast(1.06)" : "saturate(0.95)";
+      img.style.opacity = "1";
     }
+    const paintTag = function (sel, hot) {
+      const el = box.querySelector(sel);
+      if (!el) return;
+      el.style.borderColor = hot ? "#ff5d5d" : "#3ecfbf";
+      el.style.color = hot ? "#ffb4b4" : "#d5e6ee";
+    };
+    paintTag(".tag.vat", c.vatHot);
+    paintTag(".tag.sat", c.satHot);
+    paintTag(".tag.liv", c.liverHot);
+    paintTag(".tag.hrt", c.heartHot);
   }
   function paint() {
     const s = window.__state;
