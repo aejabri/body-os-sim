@@ -59,6 +59,10 @@
     const vat = clamp(c.vat || 8, 4, 28);
     const sat = clamp(c.sat || 18, 8, 42);
     const female = c.sex === "F";
+    if (window.BODY_REAL_IMG) {
+      const img = box.querySelector("#realbody");
+      if (img && img.src !== window.BODY_REAL_IMG) img.src = window.BODY_REAL_IMG;
+    }
     let cap = box.querySelector(".cap3d");
     if (!cap) {
       cap = document.createElement("div");
@@ -74,7 +78,6 @@
     const img = box.querySelector("#realbody");
     if (img) {
       img.style.filter = c.vatHot ? "saturate(1.18) contrast(1.06)" : "saturate(0.95)";
-      img.style.opacity = "1";
     }
     const paintTag = function (sel, hot) {
       const el = box.querySelector(sel);
