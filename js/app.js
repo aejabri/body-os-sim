@@ -40,6 +40,7 @@
       return '<div class="' + e.lvl + '">س' + e.t + ' · ' + e.ar + '</div>';
     }).join("") || "<div>لا أحداث</div>";
   }
+  window.__forceRender = render;
   function mealFromForm() {
     return { c: +$("mc").value, p: +$("mp").value, f: +$("mf").value, fiber: +$("mfi").value, gi: +$("mgi").value, water: +$("mw").value, tags: ["custom"] };
   }
@@ -57,12 +58,16 @@
     profile = pr;
     state = ENGINE.bootState(pr);
     window.__state = state;
+    if ($("age")) $("age").value = pr.p.age || 40;
+    if ($("sex")) $("sex").value = pr.p.sex || "M";
+    if ($("weight")) $("weight").value = Math.round((pr.p.bmi || 25) * 1.72 * 1.72);
     $("med-ins").checked = !!pr.p.insulinU;
     $("med-ins-u").value = pr.p.insulinU || 24;
     $("med-met").checked = !!pr.p.metformin;
     $("med-ace").checked = !!pr.p.acei;
     document.querySelectorAll(".pcard").forEach(function (el) { el.classList.toggle("on", el.dataset.id === pr.id); });
-    state.events.unshift({ t: 0, lvl: "info", ar: "بدأت: " + pr.ar, en: pr.en });
+    if (ENGINE.setLife) ENGINE.setLife(state, { age: +($("age") && $("age").value), sex: $("sex") && $("sex").value, weight: +($("weight") && $("weight").value), activity: $("activity") && $("activity").value });
+    state.events.unshift({ t: 0, lvl: "info", ar: "بدأت: " + pr.ar });
     render();
   }
   function paintSetup() {
