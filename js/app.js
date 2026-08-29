@@ -1,7 +1,6 @@
 (function () {
   let profile = window.PROFILES[0];
   let state = null;
-  let protocol = "balanced";
   const $ = function (id) { return document.getElementById(id); };
   function heat(v) {
     const x = Math.max(0, Math.min(1, v || 0));
@@ -35,7 +34,7 @@
       return '<div class="vital ' + tone(r[0], r[2]) + '"><b>' + r[2] + '</b><span>' + r[1] + '</span></div>';
     }).join("");
     $("explain").innerHTML = ENGINE.explainNow(state).map(function (e) {
-      return '<article><small>' + e.en + '</small><div><strong>' + e.sys + '</strong> — ' + e.txt + '</div></article>';
+      return '<article><strong>' + e.sys + '</strong> — ' + e.txt + '</article>';
     }).join("");
     $("log").innerHTML = state.events.slice(0, 24).map(function (e) {
       return '<div class="' + e.lvl + '">س' + e.t + ' · ' + e.ar + '</div>';
@@ -68,7 +67,7 @@
   }
   function paintSetup() {
     $("profiles").innerHTML = PROFILES.map(function (pr) {
-      return '<button class="pcard" data-id="' + pr.id + '"><b>' + pr.ar + '</b><span>' + pr.en + '</span></button>';
+      return '<button class="pcard" data-id="' + pr.id + '"><b>' + pr.ar + '</b><span>' + (pr.blurb || "") + '</span></button>';
     }).join("");
     $("profiles").onclick = function (e) {
       const btn = e.target.closest(".pcard");
