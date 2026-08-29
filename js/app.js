@@ -22,6 +22,7 @@
     if (id === "ketones" && n > 1.5) return n > 3 ? "bad" : "warn";
     if (id === "pH" && n < 7.32) return n < 7.25 ? "bad" : "warn";
     if (id === "egfr" && n < 60) return n < 45 ? "bad" : "warn";
+    if (id === "sbp" && n > 140) return n > 160 ? "bad" : "warn";
     return "";
   }
   function render() {
@@ -29,7 +30,15 @@
     const snap = ENGINE.snapshot(state);
     $("clock").textContent = String(snap.t);
     drawBody(snap.flux);
-    const rows = [["glucose","سكر",snap.glucose],["insulin","إنسولين",snap.insulin],["ketones","كيتون",snap.ketones],["pH","pH",snap.pH],["K","K",snap.K],["sbp","ضغط",snap.sbp],["egfr","eGFR",snap.egfr],["a1c","A1c",snap.a1c],["water","ماء",snap.water]];
+    const rows = [
+      ["glucose","سكر",snap.glucose],["insulin","إنسولين",snap.insulin],["ketones","كيتون",snap.ketones],["pH","pH",snap.pH],
+      ["K","K",snap.K],["sbp","ضغط",snap.sbp],["egfr","eGFR",snap.egfr],["a1c","A1c",snap.a1c],["water","ماء",snap.water],
+      ["ldl","LDL",snap.ldl != null ? snap.ldl : Math.round(state.ldl || 0)],
+      ["tg","TG",snap.tg != null ? snap.tg : Math.round(state.tg || 0)],
+      ["hdl","HDL",snap.hdl != null ? snap.hdl : Math.round(state.hdl || 0)],
+      ["vat","VAT",snap.vat != null ? snap.vat : (state.vat ? (+state.vat).toFixed(1) : "—")],
+      ["dnl","DNL",snap.dnl != null ? snap.dnl : (state.dnl ? (+state.dnl).toFixed(2) : "—")]
+    ];
     $("vitals").innerHTML = rows.map(function (r) {
       return '<div class="vital ' + tone(r[0], r[2]) + '"><b>' + r[2] + '</b><span>' + r[1] + '</span></div>';
     }).join("");
@@ -39,6 +48,11 @@
     $("log").innerHTML = state.events.slice(0, 24).map(function (e) {
       return '<div class="' + e.lvl + '">س' + e.t + ' · ' + e.ar + '</div>';
     }).join("") || "<div>لا أحداث</div>";
+    if (ENGINE.pathSteps && $("path")) {
+      $("path").innerHTML = ENGINE.pathSteps(state).map(function (st) {
+        return '<div class="step' + (st.on ? " on" : "") + '"><b>' + st.n + '</b><span>' + st.ar + '</span></div>';
+      }).join("");
+    }
   }
   window.__forceRender = render;
   function mealFromForm() {
@@ -56,19 +70,17 @@
   }
   function loadProfile(pr) {
     profile = pr;
-    state = ENGINE.bootState(pr);
-    window.__state = state;
     if ($("age")) $("age").value = pr.p.age || 40;
     if ($("sex")) $("sex").value = pr.p.sex || "M";
     if ($("weight")) $("weight").value = Math.round((pr.p.bmi || 25) * 1.72 * 1.72);
+    if ($("sbpNow")) $("sbpNow").value = pr.p.sbp || 120;
     $("med-ins").checked = !!pr.p.insulinU;
     $("med-ins-u").value = pr.p.insulinU || 24;
     $("med-met").checked = !!pr.p.metformin;
     $("med-ace").checked = !!pr.p.acei;
     document.querySelectorAll(".pcard").forEach(function (el) { el.classList.toggle("on", el.dataset.id === pr.id); });
-    if (ENGINE.setLife) ENGINE.setLife(state, { age: +($("age") && $("age").value), sex: $("sex") && $("sex").value, weight: +($("weight") && $("weight").value), activity: $("activity") && $("activity").value });
-    state.events.unshift({ t: 0, lvl: "info", ar: "بدأت: " + pr.ar });
-    render();
+    if (window.rebaseBeforeSim) state = window.rebaseBeforeSim();
+    else { state = ENGINE.bootState(pr); window.__state = state; render(); }
   }
   function paintSetup() {
     $("profiles").innerHTML = PROFILES.map(function (pr) {
@@ -89,6 +101,8 @@
       $("mc").value = p.meal.c; $("mp").value = p.meal.p; $("mf").value = p.meal.f;
       $("mfi").value = p.meal.fiber; $("mgi").value = p.meal.gi; $("mw").value = p.meal.water;
       window._scannedMeal = null;
+      window.__dietId = p.id;
+      document.querySelectorAll("#protocols .chip").forEach(function (el) { el.classList.toggle("on", el.dataset.id === p.id); });
     };
   }
   $("btn-eat").onclick = function () {
