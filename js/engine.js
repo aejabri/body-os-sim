@@ -10,24 +10,32 @@
       glyL: p.t1 ? 40 : 70, glyM: 280, gutC: 0, gutP: 0, gutF: 0, gutFiber: 0,
       water: 1, Na: 140, K: 4.2, HCO3: 24, pH: 7.40, sbp: p.sbp, egfr: p.egfr, a1c: p.a1c,
       weight: Math.round(p.bmi * 1.75 * 1.75), fat: p.fat, cortisol: 12, crp: p.bmi > 30 ? 2.4 : 0.8,
-      hist: 1, motil: 1, events: [], alerts: [],
+      hist: 1, motil: 1, events: [], alerts: [], _once: {},
       flux: { mouth: 0, gut: 0, liver: 0, pancreas: 0, muscle: 0, adipose: 0, kidney: 0, brain: 0, heart: 0 },
       meds: { insulinU: p.insulinU || 0, metformin: !!p.metformin, acei: !!p.acei },
       p: Object.assign({}, p)
     };
   }
   function log(s, lvl, ar, en) {
-    s.events.unshift({ t: s.t, lvl, ar, en });
+    s.events.unshift({ t: s.t, lvl: lvl, ar: ar, en: en });
     if (s.events.length > 80) s.events.pop();
-    if (lvl === "red" || lvl === "amber") { s.alerts.unshift({ t: s.t, lvl, ar }); if (s.alerts.length > 12) s.alerts.pop(); }
+    if (lvl === "red" || lvl === "amber") {
+      s.alerts.unshift({ t: s.t, lvl: lvl, ar: ar });
+      if (s.alerts.length > 12) s.alerts.pop();
+    }
+  }
+  function once(s, key, on, lvl, ar, en) {
+    if (on) {
+      if (!s._once[key]) { s._once[key] = 1; log(s, lvl, ar, en); }
+    } else s._once[key] = 0;
   }
   function eat(s, meal) {
     s.gutC += meal.c; s.gutP += meal.p; s.gutF += meal.f; s.gutFiber += meal.fiber || 0;
     s.water += (meal.water || 0) / 400; s.flux.mouth = 1; s._gi = meal.gi || 55;
     const tags = meal.tags || [];
-    if (tags.includes("sugar")) log(s, "amber", "حمل جلايسيمي عالٍ دخل الفم — امتصاص سريع متوقع.", "High-GI load.");
-    if (tags.includes("veg")) log(s, "info", "ألياف تبطئ الإفراغ وترفع الإنكرتين قليلاً.", "Fiber / GLP-1.");
-    if (tags.includes("fast")) log(s, "info", "لا سعرات. الجسم ينتقل للكبد ثم الشحم.", "Fasting shift.");
+    if (tags.indexOf("sugar") >= 0) log(s, "amber", "حمل جلايسيمي عالٍ دخل الفم.", "High-GI load.");
+    if (tags.indexOf("veg") >= 0) log(s, "info", "ألياف تبطئ الإفراغ.", "Fiber / GLP-1.");
+    if (tags.indexOf("fast") >= 0) log(s, "info", "لا سعرات. الجسم ينتقل للكبد ثم الشحم.", "Fasting shift.");
     log(s, "info", "وجبة: كرب " + meal.c + " · بروتين " + meal.p + " · دهن " + meal.f + " · ألياف " + (meal.fiber || 0), "Meal");
   }
   function setMed(s, key, on, units) {
@@ -76,7 +84,7 @@
     s.glucose += absorbC * 3.8 + hgo - brainUse - muscleUse - adiposeStore * 2;
     if (s.glucose > 180) {
       const spill = (s.glucose - 180) * 0.04;
-      s.glucose -= spill; s.water -= spill * 0.008;
+      s.glucose -= spill; s.water -= spill * 0.003;
       s.flux.kidney = clamp(0.3 + spill / 8, 0.3, 1);
     } else s.flux.kidney = 0.25 + (p.egfr < 60 ? 0.2 : 0);
     const lipolysis = clamp(0.15 + (0.9 - insulinBrake) * 0.55 + (fed < 0.5 ? 0.2 : 0), 0.05, 1.4);
@@ -85,7 +93,7 @@
     else if (s.insulin < 6 && p.residual < 0.25 && !s.meds.insulinU) { s.ketones += 0.08; s.HCO3 -= 0.08; }
     else { s.ketones = Math.max(0.1, s.ketones - 0.12 - insulinBrake * 0.08); s.HCO3 = lerp(s.HCO3, 24, 0.08); s.pH = lerp(s.pH, 7.40, 0.08); }
     if (exo > 0) s.K = Math.max(2.8, s.K - 0.04);
-    s.water = clamp(s.water - 0.04 + (fed < 0.3 ? -0.01 : 0), 0.35, 1.6);
+    s.water = clamp(s.water - 0.008 + (fed < 0.3 ? -0.004 : 0.003), 0.55, 1.6);
     s.Na = lerp(s.Na, s.water < 0.7 ? 146 : 140, 0.05);
     s.sbp += (s.Na - 140) * 0.15 + (s.water - 1) * 2 - (s.meds.acei ? 0.15 : 0);
     s.sbp = clamp(s.sbp, 88, 210);
@@ -101,11 +109,11 @@
     s.ketones = clamp(s.ketones, 0.05, 12);
     s.pH = clamp(s.pH, 6.9, 7.5);
     s.t += 1;
-    if (s.p.t1 && s.meds.insulinU === 0 && s.ketones > 3 && s.pH < 7.3) log(s, "red", "عتبة حماض كيتوني تعليمية.", "DKA threshold");
-    if (s.glucose < 55) log(s, "red", "هبوط سكر خطر.", "Hypoglycemia");
-    if (s.glucose > 300) log(s, "amber", "فرط سكر + إدرار أسموزي.", "Hyperglycemia");
-    if (s.K < 3.2) log(s, "amber", "بوتاسيوم منخفض.", "Low K");
-    if (s.egfr < 45 && absorbP > 3) log(s, "amber", "حمل بروتين على كلية ضعيفة.", "Protein vs CKD");
+    once(s, "dka", s.p.t1 && s.meds.insulinU === 0 && s.ketones > 3 && s.pH < 7.3, "red", "عتبة حماض كيتوني تعليمية.", "DKA threshold");
+    once(s, "hypo", s.glucose < 55, "red", "هبوط سكر خطر.", "Hypoglycemia");
+    once(s, "hyper", s.glucose > 300, "amber", "فرط سكر + إدرار أسموزي.", "Hyperglycemia");
+    once(s, "lok", s.K < 3.2, "amber", "بوتاسيوم منخفض.", "Low K");
+    once(s, "ckdprot", s.egfr < 45 && absorbP > 3, "amber", "حمل بروتين على كلية ضعيفة.", "Protein vs CKD");
   }
   function runHours(s, n) { for (let i = 0; i < n; i++) stepHour(s); return s; }
   function snapshot(s) {
@@ -114,13 +122,13 @@
   function explainNow(s) {
     return [
       { sys: "فم → أمعاء", en: "Mouth-gut", txt: s.gutC + s.gutP + s.gutF > 2 ? "طعام ما زال في اللمعة. الإفراغ أبطأ مع الدهن والألياف." : "القناة فارغة تقريبًا. المصدر التالي: الكبد." },
-      { sys: "بنكرياس", en: "Pancreas", txt: s.p.t1 ? (s.meds.insulinU ? "لا خلايا بيتا فاعلة. الإنسولين الظاهر خارجي." : "لا إنسولين فاعل. الليباز الحساس للهرمون بلا كابح.") : "إفراز ذاتي يتناسب مع السكر والحساسية (β=" + s.p.beta + ")." },
+      { sys: "بنكرياس", en: "Pancreas", txt: s.p.t1 ? (s.meds.insulinU ? "لا خلايا بيتا فاعلة. الإنسولين الظاهر خارجي." : "لا إنسولين فاعل. الليباز الحساس للهرمون بلا كابح.") : "إفراز ذاتي يتناسب مع السكر والحساسية." },
       { sys: "كبد", en: "Liver", txt: s.meds.metformin ? "متفورمين يخفض إنتاج الجلوكوز الكبدي." : "الكبد يضخ جلوكوزًا حسب الكورتيزول ونقص الإنسولين." },
-      { sys: "عضل / مخ", en: "Muscle/brain", txt: "المخ يستهلك ~120غ جلوكوز/يوم في النموذج المختزل. العضل يأخذ أكثر بوجود إنسولين." },
+      { sys: "عضل / مخ", en: "Muscle/brain", txt: "المخ يستهلك نحو 120غ جلوكوز/يوم في النموذج المختزل. العضل يأخذ أكثر بوجود إنسولين." },
       { sys: "شحم", en: "Adipose", txt: s.insulin < 5 ? "تحلل شحمي → أحماض حرة → كيتون إن غاب الإنسولين." : "الإنسولين يكبح التحلل الشحمي ويميل للتخزين." },
       { sys: "كلى", en: "Kidney", txt: s.glucose > 180 ? "تجاوز عتبة إعادة الامتصاص → جلوكوز في البول وجفاف." : "eGFR≈" + s.egfr.toFixed(0) + ". لا إدرار سكري مهم." },
       { sys: "قلب / حجم", en: "Heart", txt: "ضغط≈" + s.sbp.toFixed(0) + ". الصوديوم والماء وACE يحرّكون الرقم." }
     ];
   }
-  window.ENGINE = { bootState, eat, setMed, stepHour, runHours, snapshot, explainNow };
+  window.ENGINE = { bootState: bootState, eat: eat, setMed: setMed, stepHour: stepHour, runHours: runHours, snapshot: snapshot, explainNow: explainNow };
 })();
